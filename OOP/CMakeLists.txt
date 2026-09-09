@@ -13,7 +13,7 @@ endif()
 
 project(dp-oop LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
@@ -22,3 +22,4 @@ add_subdirectory(DynamicStaticPolymorphism)
 add_subdirectory(PolymorphicWrappers)
 add_subdirectory(Inheritance)
 add_subdirectory(Delegation)
+add_subdirectory(Polymorphism)

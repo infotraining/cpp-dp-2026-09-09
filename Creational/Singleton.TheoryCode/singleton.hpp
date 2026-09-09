@@ -3,6 +3,27 @@
 
 #include <iostream>
 
+// namespace DeprecatedImplementation
+// {
+//     class Singleton
+//     {
+//         static inline std::unique_ptr<Singleton> unique_instance; 
+    
+//         Singleton() = default;
+//         Singleton(const Singleton&) = delete;
+//         Singleton& operator=(const Singleton&) = delete;
+        
+//     public:
+//         static Singleton& instance()
+//         {
+//             if (!unique_instance) // not thread-safe!!!
+//                 unique_instance = std::make_unique<Singleton>(); // lazy initialization
+
+//             return *unique_instance;
+//         }
+//     };
+// }
+
 class Singleton
 {
 public:

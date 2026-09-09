@@ -68,6 +68,11 @@ namespace DynamicPolymorphism
             : formatter_{std::move(formatter)}
         { }
 
+        void set_formatter(std::unique_ptr<Formatter> formatter)
+        {
+            formatter_ = std::move(formatter);
+        }
+
         void log(const std::string& data)
         {
             std::cout << "LOG: " << formatter_->format(data) << '\n';
@@ -98,7 +103,12 @@ namespace StaticPolymorphism
         }
     };
 
-    template <typename TFormatter = UpperCaseFormatter>
+    template <typename T>
+    concept Formatter = requires(T t, const std::string& message) {
+        { t.format(message) } -> std::convertible_to<std::string>;
+    };
+
+    template <Formatter TFormatter = UpperCaseFormatter>
     class Logger
     {
         TFormatter formatter_;
@@ -136,11 +146,14 @@ void static_polymorphism()
 {
     using namespace StaticPolymorphism;
 
-    Logger logger{UpperCaseFormatter{}};
+    Logger logger{UpperCaseFormatter{}}; // CTAD - C++17
     logger.log("Hello, World!");
 
     Logger<CapitalizeFormatter> logger2;
     logger2.log("hello, world!");
+
+    // Logger<std::string> logger3; // Error: std::string does not satisfy the Formatter concept
+    // logger3.log("Hello, World!");
 }
 
 int main()

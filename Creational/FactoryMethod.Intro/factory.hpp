@@ -7,6 +7,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <thread>
+#include <functional>
 
 using Track = std::vector<char>;
 
@@ -14,7 +16,7 @@ using Track = std::vector<char>;
 class MusicService
 {
 public:
-    virtual std::optional<Track> get_track(const std::string& title) = 0;
+    virtual std::optional<Track> get_track(const std::string &title) = 0;
     virtual ~MusicService() = default;
 };
 
@@ -22,12 +24,12 @@ public:
 class TidalService : public MusicService
 {
 public:
-    TidalService(const std::string& user_name, const std::string& secret)
+    TidalService(const std::string &user_name, const std::string &secret)
     {
         std::cout << "Creating TidalService...\n";
     }
 
-    std::optional<Track> get_track(const std::string& title) override
+    std::optional<Track> get_track(const std::string &title) override
     {
         return Track(title.begin(), title.end());
     }
@@ -37,13 +39,29 @@ public:
 class SpotifyService : public MusicService
 {
 public:
-    SpotifyService(const std::string& user_name, const std::string& secret, int timeout = 30)
+    SpotifyService(const std::string &user_name, const std::string &secret, int timeout = 30)
     {
         std::cout << "Creating SpotifyService...\n";
     }
 
-    std::optional<Track> get_track(const std::string& title) override
+    std::optional<Track> get_track(const std::string &title) override
     {
+        return Track(title.begin(), title.end());
+    }
+};
+
+class YouTubeService : public MusicService
+{
+public:
+    YouTubeService(const std::string &user_name, const std::string &secret)
+    {
+        std::cout << "Creating YouTubeService...\n";
+    }
+
+    std::optional<Track> get_track(const std::string &title) override
+    {
+        std::cout << "Advertisement before playing track: " << title << "\n";
+        std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate advertisement delay
         return Track(title.begin(), title.end());
     }
 };
@@ -52,79 +70,138 @@ public:
 class FilesystemMusicService : public MusicService
 {
 public:
-    FilesystemMusicService(const std::string& directory_path = "/user/music")
+    FilesystemMusicService(const std::string &directory_path = "/user/music")
     {
         std::cout << "Creating FilesystemMusicService...\n";
     }
 
-    std::optional<Track> get_track(const std::string& title) override
+    std::optional<Track> get_track(const std::string &title) override
     {
         return std::nullopt;
     }
 };
 
-// "Creator"
-class MusicServiceCreator
+namespace CanonicalFactoryMethod
 {
-public:
-    virtual std::unique_ptr<MusicService> create_music_service() = 0; // factory method
-    virtual ~MusicServiceCreator() = default;
-};
+    // "Creator"
+    class MusicServiceCreator
+    {
+    public:
+        virtual std::unique_ptr<MusicService> create_music_service() = 0; // factory method
+        virtual ~MusicServiceCreator() = default;
+    };
 
-// "ConcreteCreatorA"
-class TidalServiceCreator : public MusicServiceCreator
+    // "ConcreteCreatorA"
+    class TidalServiceCreator : public MusicServiceCreator
+    {
+        std::string user_name_;
+        std::string secret_;
+
+    public:
+        TidalServiceCreator(const std::string &user_name, const std::string &secret)
+            : user_name_{user_name}, secret_{secret}
+        {
+        }
+
+        std::unique_ptr<MusicService> create_music_service() override
+        {
+            return std::make_unique<TidalService>(user_name_, secret_);
+        }
+    };
+
+    // "ConcreteCreatorB"
+    class SpotifyServiceCreator : public MusicServiceCreator
+    {
+        std::string user_name_;
+        std::string secret_;
+        int timeout_;
+
+    public:
+        SpotifyServiceCreator(const std::string &user_name, const std::string &secret, int timeout)
+            : user_name_{user_name}, secret_{secret}, timeout_{timeout}
+        {
+        }
+
+        std::unique_ptr<MusicService> create_music_service() override
+        {
+            return std::make_unique<SpotifyService>(user_name_, secret_, timeout_);
+        }
+    };
+
+    class FsMusicServiceCreator : public MusicServiceCreator
+    {
+        std::string path_;
+
+    public:
+        FsMusicServiceCreator(const std::string &path = "/music")
+            : path_{path}
+        {
+        }
+
+        std::unique_ptr<MusicService> create_music_service() override
+        {
+            return std::make_unique<FilesystemMusicService>(path_);
+        }
+    };
+
+    class YouTubeServiceCreator : public MusicServiceCreator
+    {
+        std::string user_name_;
+        std::string secret_;
+
+    public:
+        YouTubeServiceCreator(const std::string &user_name, const std::string &secret)
+            : user_name_{user_name}, secret_{secret}
+        {
+        }
+
+        std::unique_ptr<MusicService> create_music_service() override
+        {
+            return std::make_unique<YouTubeService>(user_name_, secret_);
+        }
+    };
+}
+
+namespace ModernCpp
 {
-    std::string user_name_;
-    std::string secret_;
+    // MusicServiceCreator - interface for creating MusicService instances defined with std::function
+    using MusicServiceCreator = std::function<std::unique_ptr<MusicService>()>;
 
-public:
-    TidalServiceCreator(const std::string& user_name, const std::string& secret)
-        : user_name_{user_name}
-        , secret_{secret}
+    class TidalServiceCreator
     {
-    }
+        std::string user_name_;
+        std::string secret_;
 
-    std::unique_ptr<MusicService> create_music_service() override
+    public:
+        TidalServiceCreator(const std::string &user_name, const std::string &secret)
+            : user_name_{user_name}, secret_{secret}
+        {
+        }
+
+        std::unique_ptr<MusicService> operator()()
+        {
+            return std::make_unique<TidalService>(user_name_, secret_);
+        }
+    };
+
+    class SpotifyServiceCreator
     {
-        return std::make_unique<TidalService>(user_name_, secret_);
-    }
-};
+        std::string user_name_;
+        std::string secret_;
+        int timeout_;
 
-// "ConcreteCreatorB"
-class SpotifyServiceCreator : public MusicServiceCreator
-{
-    std::string user_name_;
-    std::string secret_;
-    int timeout_;
+    public:
+        SpotifyServiceCreator(const std::string &user_name, const std::string &secret, int timeout)
+            : user_name_{user_name}, secret_{secret}, timeout_{timeout}
+        {
+        }
 
-public:
-    SpotifyServiceCreator(const std::string& user_name, const std::string& secret, int timeout)
-        : user_name_{user_name}
-        , secret_{secret}
-        , timeout_{timeout}
-    {
-    }
+        std::unique_ptr<MusicService> operator()()
+        {
+            return std::make_unique<SpotifyService>(user_name_, secret_, timeout_);
+        }
+    };
 
-    std::unique_ptr<MusicService> create_music_service() override
-    {
-        return std::make_unique<SpotifyService>(user_name_, secret_, timeout_);
-    }
-};
-
-class FsMusicServiceCreator : public MusicServiceCreator
-{
-    std::string path_;
-
-public:
-    FsMusicServiceCreator(const std::string& path = "/music")
-        : path_{path}
-    {
-    }
-
-    std::unique_ptr<MusicService> create_music_service() override
-    {
-        return std::make_unique<FilesystemMusicService>(path_);
-    }
-};
+}
 
 #endif /*FACTORY_HPP_*/
