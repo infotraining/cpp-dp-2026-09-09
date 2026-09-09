@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.10...3.30)
 
 project(ShapesJson LANGUAGES CXX)
 
@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_subdirectory(Dependencies)
+# add_subdirectory(Dependencies)
 
 add_library(ShapesLib STATIC
     point.cpp
