@@ -84,6 +84,8 @@ public:
             cout << "Loading " << shape_id << "..." << endl;
 
             auto shape = shape_factory_.create(shape_id);
+            // auto shape = ShapeFactorySingleton::instance().create(shape_id); // UNTESTABLE CODE - implicit coupling with global object
+            
             auto shape_rw = shape_rw_factory_.create(make_type_index(*shape));
 
             shape_rw->read(*shape, file_in);
