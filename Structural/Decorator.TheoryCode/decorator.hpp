@@ -41,8 +41,8 @@ public:
     }
 
     void operation() override
-    {
-        component_->operation();
+    {        
+        component_->operation(); // Delegate the operation to the wrapped component
     }
 };
 
