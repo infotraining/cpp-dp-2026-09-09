@@ -22,7 +22,7 @@ int main()
     root->add(leaf);
 
     // Recursively display tree
-    root->display(1);
+    root->display(1); 
 
     std::cout << "\n\n---------------------\n\n";
 

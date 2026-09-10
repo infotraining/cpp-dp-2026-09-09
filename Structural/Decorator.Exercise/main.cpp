@@ -16,7 +16,7 @@ public:
     CoffeeBuilder() = default;
 
     template <typename Base, typename... Args>
-    CoffeeBuilder &create_base(Args &&...args)
+    CoffeeBuilder& create_base(Args&&... args)
     {
         static_assert(std::is_base_of<Coffee, Base>::value, "Base must derive from Coffee");
         coffee_ = std::make_unique<Base>(std::forward<Args>(args)...);
@@ -24,7 +24,7 @@ public:
     }
 
     template <typename... Decorator>
-    CoffeeBuilder &add()
+    CoffeeBuilder& add()
     {
         static_assert((std::is_base_of<CoffeeDecorator, Decorator>::value && ...), "All Decorators must derive from CoffeeDecorator");
         (..., (coffee_ = std::make_unique<Decorator>(std::move(coffee_))));
