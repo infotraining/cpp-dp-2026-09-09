@@ -7,6 +7,7 @@ using namespace std;
 int main()
 {
     Director director;
+    SportCarDirector sport_car_director;
 
     cout << "Building with EconomyCarBuilder:\n";
     EconomyCarBuilder economy_car_builder;
@@ -16,7 +17,7 @@ int main()
 
     cout << "\n\nBuilding with PremiumCarBuilder:\n";
     PremiumCarBuilder premium_car_builder;
-    director.construct(premium_car_builder);
+    sport_car_director.construct(premium_car_builder);
     Car premium_car = premium_car_builder.get_result();
     std::cout << premium_car.get_configuration();
 }

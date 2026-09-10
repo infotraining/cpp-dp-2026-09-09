@@ -3,27 +3,33 @@
 
 using namespace std;
 
-class Client
+void using_object_adapter()
 {
-public:
-    void do_operation(Target& t)
-    {
-        t.request();
-    }
-};
+    LowLevel::LedLight led;
+    SwitchObjectAdapter switchAdapter(led);
+    Button button(switchAdapter);
+
+    button.press();
+    button.release();
+}
+
+void using_class_adapter()
+{
+    SwitchCmykAdapter switchAdapter;
+    Button button(switchAdapter);
+
+    button.press();
+    button.release();
+}
 
 int main()
 {
-    Client client;
-
-    cout << "-- do_operation on ClassAdapter" << endl;
-    ClassAdapter cadapter;
-    client.do_operation(cadapter);
+    using_object_adapter();
 
     cout << endl;
 
-    cout << "-- do_operation on ObjectAdapter" << endl;
-    Adaptee adaptee;
-    ObjectAdapter oadapter(adaptee);
-    client.do_operation(oadapter);
+
+    using_class_adapter();
+
+    return 0;
 }
