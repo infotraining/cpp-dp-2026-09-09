@@ -12,8 +12,21 @@ public:
     virtual ~Engine() = default;
 };
 
-class Diesel : public Engine
+template <typename T, typename TEngineBase = Engine>
+class CloneableEngine : public TEngineBase
 {
+public:
+    using TEngineBase::TEngineBase; // inheriting constructors from the base engine class
+
+    std::unique_ptr<Engine> clone() const override
+    {
+        return std::make_unique<T>(static_cast<const T &>(*this));
+    }
+};
+
+class Diesel : public CloneableEngine<Diesel> // CRTP - Curiously Recurring Template Pattern
+{
+     int id_{0};
 public:
     void start() override
     {
@@ -25,13 +38,13 @@ public:
         std::cout << "Diesel stops\n";
     }
 
-    std::unique_ptr<Engine> clone() const override
-    {
-        return std::make_unique<Diesel>(*this); // Diesel copy constructor
-    }
+    // std::unique_ptr<Engine> clone() const override
+    // {
+    //     return std::make_unique<Diesel>(*this); // Diesel copy constructor
+    // }
 };
 
-class TDI : public Diesel
+class TDI : public CloneableEngine<TDI, Diesel> // CRTP - Curiously Recurring Template Pattern
 {
 public:
     void start() override
@@ -43,14 +56,9 @@ public:
     {
         std::cout << "TDI stops\n";
     }
-
-    std::unique_ptr<Engine> clone() const override
-    {
-        return std::make_unique<TDI>(*this); // TDI copy constructor
-    }
 };
 
-class Hybrid : public Engine
+class Hybrid : public CloneableEngine<Hybrid> // CRTP - Curiously Recurring Template Pattern
 {
 public:
     void start() override
@@ -63,10 +71,10 @@ public:
         std::cout << "Hybrid stops\n";
     }
 
-    std::unique_ptr<Engine> clone() const override
-    {
-        return std::make_unique<Hybrid>(*this); // Hybrid copy constructor
-    }
+    // std::unique_ptr<Engine> clone() const override
+    // {
+    //     return std::make_unique<Hybrid>(*this); // Hybrid copy constructor
+    // }
 };
 
 class Car
