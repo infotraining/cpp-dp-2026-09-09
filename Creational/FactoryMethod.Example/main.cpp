@@ -5,7 +5,7 @@
 #include <vector>
 #include <functional>
 #include <typeindex>
-
+#include <list>
 #include "rectangle.hpp"
 #include "shape.hpp"
 #include "shape_readers_writers/rectangle_reader_writer.hpp"
@@ -85,7 +85,7 @@ public:
 
             auto shape = shape_factory_.create(shape_id);
             // auto shape = ShapeFactorySingleton::instance().create(shape_id); // UNTESTABLE CODE - implicit coupling with global object
-            
+
             auto shape_rw = shape_rw_factory_.create(make_type_index(*shape));
 
             shape_rw->read(*shape, file_in);
@@ -120,12 +120,32 @@ int main()
     cout << "Start..." << endl;
 
     GraphicsDoc doc(Drawing::ShapeFactorySingleton::instance(), Drawing::ShapeRWFactorySingleton::instance());
-
     doc.load("drawing_fm_example.txt");
 
     cout << "\n";
-
     doc.render();
 
     doc.save("new_drawing.txt");
+}
+
+void surprisingly_popular_factory_method()
+{
+    std::vector<int> vec = {1, 2, 3, 4};
+
+    for(auto item : vec) {
+        std::cout << item << " ";
+    }
+
+    /// PSEUDOCODE
+    // for(auto it = vec.create_iterator(); it != it.is_done(); it.next())
+    // {
+    //     auto& item = it.current_item();
+    //     std::cout << item << " ";
+    // }
+
+    for(std::input_iterator auto it = vec.begin(); it != vec.end(); ++it)
+    {
+        auto item = *it;
+        std::cout << item << " ";
+    }
 }
