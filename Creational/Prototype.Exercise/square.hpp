@@ -5,19 +5,18 @@
 
 namespace Drawing
 {
-
-    class Square : public Shape
+    class Square : public CloneableShape<Square>
     {
         Rectangle rect_;
 
     public:
-        static constexpr const char* id = "Square";
+        static constexpr const char *id = "Square";
 
         Square(int x = 0, int y = 0, int size = 0);
 
         Point coord() const;
 
-        void set_coord(const Point& pt);
+        void set_coord(const Point &pt);
 
         int size() const;
 
@@ -26,6 +25,11 @@ namespace Drawing
         void draw() const override;
 
         void move(int dx, int dy) override;
+
+        // std::unique_ptr<Shape> clone() const override
+        // {
+        //     return std::make_unique<Square>(*this);
+        // }
     };
 }
 

@@ -5,7 +5,7 @@
 
 namespace Drawing
 {
-    class Circle : public ShapeBase
+    class Circle : public ShapeBase<Circle>
     {
         int radius_;
 
@@ -25,6 +25,11 @@ namespace Drawing
         }
 
         void draw() const override;
+
+        // std::unique_ptr<Shape> clone() const override
+        // {
+        //     return std::make_unique<Circle>(*this);
+        // }
     };
 }
 

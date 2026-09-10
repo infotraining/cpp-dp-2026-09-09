@@ -5,7 +5,7 @@
 
 namespace Drawing
 {
-    class Rectangle : public ShapeBase
+    class Rectangle : public ShapeBase<Rectangle>
     {
         int width_, height_;
 
@@ -35,6 +35,11 @@ namespace Drawing
         }
 
         void draw() const override;
+
+        // std::unique_ptr<Shape> clone() const override
+        // {
+        //     return std::make_unique<Rectangle>(*this);
+        // }
     };
 } // namespace Drawing
 #endif // RECTANGLE_HPP

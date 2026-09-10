@@ -29,6 +29,15 @@ public:
     {
     }
 
+    GraphicsDoc(const GraphicsDoc &source)
+        : shape_factory_{source.shape_factory_}
+        , shape_rw_factory_{source.shape_rw_factory_}
+    {
+        shapes_.reserve(source.shapes_.size());
+        for (const auto& shp : source.shapes_)
+            shapes_.push_back(shp->clone());
+    }
+
     void add(unique_ptr<Shape> shp)
     {
         shapes_.push_back(std::move(shp));
@@ -93,8 +102,10 @@ int main()
 
     doc.render();
 
+    std::cout << "\n";
+
     // TODO: Uncomment this code
-    // GraphicsDoc doc2 = doc;
-    // doc2.render();
-    // doc2.save("new_drawing.txt");
+    GraphicsDoc doc2 = doc;
+    doc2.render();
+    doc2.save("new_drawing.txt");
 }
