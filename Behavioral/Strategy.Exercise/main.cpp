@@ -49,15 +49,24 @@ public:
     };
 };
 
-class MinMax : public Statistics
+class Min : public Statistics
 {
 public:
     void calculate(Data& data_, Results& results_) override
     {
         double min = *(std::min_element(data_.begin(), data_.end()));
-        double max = *(std::max_element(data_.begin(), data_.end()));
 
         results_.push_back(StatResult("Min", min));
+    };
+};
+
+class Max : public Statistics
+{
+public:
+    void calculate(Data& data_, Results& results_) override
+    {
+        double max = *(std::max_element(data_.begin(), data_.end()));
+
         results_.push_back(StatResult("Max", max));
     };
 };
@@ -95,6 +104,24 @@ public:
 
         results_.push_back(StatResult("Median", median));
     };
+};
+
+class StatGroup : public Statistics
+{
+    std::vector<std::shared_ptr<Statistics>> statistics_;
+public:
+    void add_statistics(std::shared_ptr<Statistics> stat)
+    {
+        statistics_.push_back(stat);
+    }
+
+    void calculate(Data& data_, Results& results_) override
+    {
+        for (auto& stat : statistics_)
+        {
+            stat->calculate(data_, results_);
+        }
+    }
 };
 
 class DataAnalyzer
@@ -155,21 +182,28 @@ int main()
     // Hint#1: Define an interface for calculating Statistics
     // Hint#2: Use delegation technique to replace ifs in calculate() method
     auto avg = std::make_shared<Avg>();
-    auto min_max = std::make_shared<MinMax>();
+    auto min = std::make_shared<Min>();
+    auto max = std::make_shared<Max>();
+    
+    auto min_max = std::make_shared<StatGroup>();
+    min_max->add_statistics(min);
+    min_max->add_statistics(max);
+
     auto sum = std::make_shared<Sum>();
+
+    auto basic_stats = std::make_shared<StatGroup>();
+    basic_stats->add_statistics(avg);
+    basic_stats->add_statistics(min_max);
+    basic_stats->add_statistics(sum);
+
     auto median = std::make_shared<Median>(); 
 
-    DataAnalyzer da{avg};
+    auto advanced_stats = std::make_shared<StatGroup>();
+    advanced_stats->add_statistics(basic_stats);
+    advanced_stats->add_statistics(median);
+
+    DataAnalyzer da{basic_stats};
     da.load_data("stats_data.dat");
-    da.calculate();
-
-    da.set_statistics(min_max);
-    da.calculate();
-
-    da.set_statistics(sum);
-    da.calculate();
-
-    da.set_statistics(median);
     da.calculate();
 
     show_results(da.results());
@@ -177,6 +211,7 @@ int main()
     std::cout << "\n\n";
 
     da.load_data("new_stats_data.dat");
+    da.set_statistics(advanced_stats);
     da.calculate();
 
     show_results(da.results());
