@@ -23,22 +23,89 @@ struct StatResult
 using Data = std::vector<double>;
 using Results = std::vector<StatResult>;
 
-enum StatisticsType
-{
+enum StatisticsType {
     avg,
     min_max,
     sum
 };
 
+class Statistics
+{
+public:
+    virtual ~Statistics() = default;
+    virtual void calculate(Data& data_, Results& results_) = 0;
+};
+
+class Avg : public Statistics
+{
+public:
+    void calculate(Data& data_, Results& results_) override
+    {
+        double sum = std::accumulate(data_.begin(), data_.end(), 0.0);
+        double avg = sum / data_.size();
+
+        StatResult result("Avg", avg);
+        results_.push_back(result);
+    };
+};
+
+class MinMax : public Statistics
+{
+public:
+    void calculate(Data& data_, Results& results_) override
+    {
+        double min = *(std::min_element(data_.begin(), data_.end()));
+        double max = *(std::max_element(data_.begin(), data_.end()));
+
+        results_.push_back(StatResult("Min", min));
+        results_.push_back(StatResult("Max", max));
+    };
+};
+
+class Sum : public Statistics
+{
+public:
+    void calculate(Data& data_, Results& results_) override
+    {
+        double sum = std::accumulate(data_.begin(), data_.end(), 0.0);
+
+        results_.push_back(StatResult("Sum", sum));
+    };
+};
+
+class Median : public Statistics
+{
+public:
+    void calculate(Data& data_, Results& results_) override
+    {
+        if (data_.empty())
+            return;
+
+        std::sort(data_.begin(), data_.end());
+        double median;
+        size_t size = data_.size();
+        if (size % 2 == 0)
+        {
+            median = (data_[size / 2 - 1] + data_[size / 2]) / 2.0;
+        }
+        else
+        {
+            median = data_[size / 2];
+        }
+
+        results_.push_back(StatResult("Median", median));
+    };
+};
+
 class DataAnalyzer
 {
-    StatisticsType stat_type_;
+    std::shared_ptr<Statistics> calculate_strategy;
     Data data_;
     Results results_;
 
 public:
-    DataAnalyzer(StatisticsType stat_type)
-        : stat_type_{stat_type}
+    DataAnalyzer(std::shared_ptr<Statistics> calculate_strategy)
+        : calculate_strategy{calculate_strategy}
     {
     }
 
@@ -60,35 +127,14 @@ public:
         std::cout << "File " << file_name << " has been loaded...\n";
     }
 
-    void set_statistics(StatisticsType stat_type)
+    void set_statistics(std::shared_ptr<Statistics> new_strategy)
     {
-        stat_type_ = stat_type;
+        calculate_strategy = new_strategy;
     }
 
     void calculate()
     {
-        if (stat_type_ == avg)
-        {
-            double sum = std::accumulate(data_.begin(), data_.end(), 0.0);
-            double avg = sum / data_.size();
-
-            StatResult result("Avg", avg);
-            results_.push_back(result);
-        }
-        else if (stat_type_ == min_max)
-        {
-            double min = *(std::min_element(data_.begin(), data_.end()));
-            double max = *(std::max_element(data_.begin(), data_.end()));
-
-            results_.push_back(StatResult("Min", min));
-            results_.push_back(StatResult("Max", max));
-        }
-        else if (stat_type_ == sum)
-        {
-            double sum = std::accumulate(data_.begin(), data_.end(), 0.0);
-
-            results_.push_back(StatResult("Sum", sum));
-        }
+        calculate_strategy->calculate(data_, results_);
     }
 
     const Results& results() const
@@ -107,17 +153,23 @@ int main()
 {
     // TODO: Refactor the code above using Strategy Pattern
     // Hint#1: Define an interface for calculating Statistics
-    // Hint#2: Use delegation technique to replace ifs in calculate() method 
+    // Hint#2: Use delegation technique to replace ifs in calculate() method
+    auto avg = std::make_shared<Avg>();
+    auto min_max = std::make_shared<MinMax>();
+    auto sum = std::make_shared<Sum>();
+    auto median = std::make_shared<Median>(); 
 
     DataAnalyzer da{avg};
     da.load_data("stats_data.dat");
-
     da.calculate();
 
     da.set_statistics(min_max);
     da.calculate();
 
     da.set_statistics(sum);
+    da.calculate();
+
+    da.set_statistics(median);
     da.calculate();
 
     show_results(da.results());
