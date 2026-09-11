@@ -1,4 +1,5 @@
 #include "src/turnstile.hpp"
+
 #include <iostream>
 
 using namespace std;
@@ -7,7 +8,7 @@ int main()
 {
     TurnstileAPI api;
 
-    After::Turnstile t{api};
+    Cpp17::Turnstile t{api};
 
     t.coin();
     t.pass();
@@ -17,4 +18,9 @@ int main()
     t.coin();
     t.coin();
     t.coin();
+    t.coin();
+    t.coin();
+    t.coin();
+
+    t.audit();
 }

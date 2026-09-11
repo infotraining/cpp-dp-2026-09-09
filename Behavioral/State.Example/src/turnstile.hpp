@@ -175,7 +175,7 @@ namespace After
     };
 }
 
-namespace cpp17
+namespace Cpp17
 {
     template <typename... Ts>
     struct overloaded : Ts...
@@ -186,15 +186,25 @@ namespace cpp17
     template <typename... Ts>
     overloaded(Ts...) -> overloaded<Ts...>; 
 
+    struct TurnstileContext
+    {
+        uint32_t coin_count = 0;
+    };
+
     class Turnstile
     {
         TurnstileAPI& api_;
+        std::shared_ptr<TurnstileContext> context_ = std::make_shared<TurnstileContext>();
 
-        struct Locked {};
-        struct Unlocked {};
+        struct Locked {
+            std::shared_ptr<TurnstileContext> context;
+        };
+        struct Unlocked {
+            std::shared_ptr<TurnstileContext> context;
+        };
 
         using TurnstileState = std::variant<Locked, Unlocked>;
-        TurnstileState state_ = Locked{};
+        TurnstileState state_ = Locked{context_};
 
         struct PassEvent
         {
@@ -203,13 +213,13 @@ namespace cpp17
             TurnstileState operator()(const Locked& locked_state) const
             {
                 api_.alarm();
-                return Locked{};
+                return Locked{locked_state.context};
             }
 
             TurnstileState operator()(const Unlocked& unlocked_state) const
             {
                 api_.lock();
-                return Locked{};
+                return Locked{unlocked_state.context};
             }
         };
 
@@ -220,13 +230,15 @@ namespace cpp17
             TurnstileState operator()(const Locked& locked_state) const
             {
                 api_.unlock();
-                return Unlocked{};
+                locked_state.context->coin_count++;
+                return Unlocked{locked_state.context};
             }
 
             TurnstileState operator()(const Unlocked& unlocked_state) const
             {
+                unlocked_state.context->coin_count++;
                 api_.display("Thank you...");
-                return Unlocked{};
+                return Unlocked{unlocked_state.context};
             }
         };
 
@@ -243,6 +255,11 @@ namespace cpp17
         void pass()
         {
              state_ = std::visit(PassEvent{api_}, state_);
+        }
+
+        void audit() const
+        {
+            std::cout << "Coin count: " << context_->coin_count << std::endl;
         }
 
         ::TurnstileState state() const

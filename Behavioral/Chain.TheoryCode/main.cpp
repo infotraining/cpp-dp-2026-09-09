@@ -18,6 +18,6 @@ int main()
 
     for (const auto& r : requests)
     {
-        h1->handle_request(r);
+        h1->process_request(r);
     }
 }

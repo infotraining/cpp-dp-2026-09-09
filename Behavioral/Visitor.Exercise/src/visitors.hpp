@@ -36,8 +36,35 @@ public:
 };
 
 // TODO: Implement visitor that prints expression to string
-class PrintingVisitor
+class PrintingVisitor : public AST::AstVisitor
 {
+private:
+    std::string str_;
+
+public:
+    void visit(AST::AddNode& node) override
+    {
+        node.left().accept(*this);
+        str_ += " + ";
+        node.right().accept(*this);
+    }
+
+    void visit(AST::MultiplyNode& node) override
+    {
+        node.left().accept(*this);
+        str_ += " * ";
+        node.right().accept(*this);
+    }
+
+    void visit(AST::IntNode& node) override
+    {
+        str_ += std::to_string(node.value());
+    }
+
+    std::string str() const
+    {
+        return str_;
+    }
 };
 
 #endif // VISITORS_HPP
