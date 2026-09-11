@@ -85,12 +85,14 @@ namespace Facade
         };
 
     public:
+        virtual ~MailerService() = default;
+
         MailBuilder create_email()
         {
             return MailBuilder();
         }
 
-        void send_email(std::string from, std::string to, const Email& email)
+        virtual void send_email(std::string from, std::string to, const Email& email) const
         {
             using namespace EmailLib;
 

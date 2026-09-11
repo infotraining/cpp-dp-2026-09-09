@@ -1,5 +1,6 @@
 #include "proxy.hpp"
 #include <functional>
+#include <thread>
 
 using ImageFactory = std::function<std::unique_ptr<Image>(std::string)>;
 
@@ -27,7 +28,14 @@ int main()
     using namespace std::literals;
     auto image_filenames = {"drawing1.drw"s, "drawing2.drw"s, "drawing3.drw"s};
 
-    ClientApplication c{image_filenames, &std::make_unique<LazyBitmap, std::string>};
+    auto bitmap_image_factory = [] (std::string filename) { return std::make_unique<Bitmap>(filename); };
+    auto lazy_image_factory = [] (std::string filename) { return std::make_unique<LazyBitmap>(filename); };
+
+    ClientApplication c{image_filenames, lazy_image_factory};
+
+    std::cout << "Loading complete..." << std::endl;
+    std::this_thread::sleep_for(3s);
+    std::cout << "Rendering images..." << std::endl;
 
     c.render(0);
     c.render(1);

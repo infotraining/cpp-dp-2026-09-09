@@ -71,7 +71,7 @@ public:
 class LazyBitmap : public Image
 {
     std::string path_;
-    std::unique_ptr<Bitmap> bitmap_;
+    std::unique_ptr<Bitmap> bitmap_; // std::polymorphic pointer since C++26
 
 public:
     LazyBitmap(std::string path)

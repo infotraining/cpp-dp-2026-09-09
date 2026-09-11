@@ -53,7 +53,7 @@ FetchContent_MakeAvailable(json)
 #   DOWNLOAD_EXTRACT_TIMESTAMP ON
 # )
 
-# set(BOOST_INCLUDE_LIBRARIES flyweight)
+# set(BOOST_INCLUDE_LIBRARIES  flyweight)
 # FetchContent_MakeAvailable(Boost)
 
-# target_link_libraries(target_name PRIVATE Boost::flyweight)
+# target_link_libraries(target_name PRIVATE Boost::boost Boost::flyweight)
